@@ -19,14 +19,30 @@ app.get("/costumes", async (req, res) => {
 	}
 });
 
-app.post("/costumes", async (req, res) => {
-	const { email, costume } = req.body;
+app.get("/emails", async (req, res) => {
 	try {
-		const result = await pool.query(
+		const result = await pool.query("SELECT DISTINCT email FROM costumes");
+		const emails = result.rows.map(row => row.email);
+		res.json(emails);
+	} catch (err) {
+		console.error(err);
+		res.status(500).send("Server error");
+	}
+});
+
+
+app.post("/costumes", async (req, res) => {
+	const { email, costumes } = req.body;
+	console.log(req.body);
+	try {
+		const promises = costumes.map((costume) =>
+			 pool.query(
 				"INSERT INTO costumes (email, costume) VALUES ($1, $2) RETURNING *",
-				[email, costume]
-		);
-		res.json(result.rows[0]);
+				[email, costume]));
+		console.log(promises);
+		await Promise.all(promises);
+		console.log("Successfully created costumes");
+		res.status(200).end();
 	} catch (err) {
 		console.error(err);
 		res.status(500).send("Server error");
