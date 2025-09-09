@@ -1,8 +1,12 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
 const pool = require("./db");
 
 const app = express();
+app.use(cors({
+	origin: process.env.FRONTEND_URL
+}));
 app.use(express.json());
 
 app.get("/costumes", async (req, res) => {
